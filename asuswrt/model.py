@@ -6,6 +6,20 @@ class StringMixin(object):
 
 class Client(StringMixin):
     def __init__(self, data):
+        if not isinstance(data, dict):
+            self.__of_null__()
+        else:
+            self.__of__(data)
+
+    def __of_null__(self):
+        self.mac = "n/a"
+        self.ip = "n/a"
+        self.interface = "n/a"
+        self.rssi = "n/a"
+        self.name = "n/a"
+        self.alias = "n/a"
+
+    def __of__(self, data):
         self.mac = data.get('mac')
         self.ip = data.get('ip')
         self.interface = data.get('interface', 'wired')
