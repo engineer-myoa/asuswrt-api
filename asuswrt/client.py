@@ -93,7 +93,7 @@ class AsusWRT:
         '''
         return self.get('wanlink_state(appobj)')
 
-    def get_online_clients(self):
+    def get_clients(self, online_only=True):
         '''
         Get online clients.
 
@@ -117,10 +117,27 @@ class AsusWRT:
                 if client:
                     client.alias = val.get('alias')
 
-        response = self.get('get_clientlist(appobj);wl_sta_list_2g(appobj);wl_sta_list_5g(appobj);wl_sta_list_5g_2(appobj);nvram_get(custom_clientlist)')
+        def refine_clients(clients_raw, mac_list):
+            return dict({key : clients_raw.get(key) for key in mac_list})
 
-        clients = response.get('get_clientlist', {})
-        clients.pop('maclist', None)
+        def filter_only_online_clinets(clients):
+            return dict({key: value for key, value in clients.items() if is_online(value)})
+
+        def is_online(item):
+            return bool(int(item.get("isOnline")))
+
+        response = self.get('get_clientlist(appobj);' +
+                            'wl_sta_list_2g(appobj);' +
+                            'wl_sta_list_5g(appobj);' +
+                            'wl_sta_list_5g_2(appobj);' +
+                            'nvram_get(custom_clientlist)')
+        clients_raw = response.get('get_clientlist', {})
+        mac_list = clients_raw.get('maclist')
+        clients = refine_clients(clients_raw, mac_list)
+
+        if online_only:
+            clients = filter_only_online_clinets(clients)
+
         clients = list(map(Client, list(clients.values())))
 
         update_interface('2g', '2GHz')
