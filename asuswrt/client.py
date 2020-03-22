@@ -93,7 +93,7 @@ class AsusWRT:
         '''
         return self.get('wanlink_state(appobj)')
 
-    def get_online_clients(self, online_only=True):
+    def get_clients(self, online_only=True):
         '''
         Get online clients.
 
@@ -124,7 +124,6 @@ class AsusWRT:
             return dict({key: value for key, value in clients.items() if is_online(value)})
 
         def is_online(item):
-            print(item.get("isOnline"))
             return bool(int(item.get("isOnline")))
 
         response = self.get('get_clientlist(appobj);' +
